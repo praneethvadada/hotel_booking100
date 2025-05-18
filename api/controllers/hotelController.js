@@ -78,21 +78,50 @@ const getOneHotel = async (req, res) => {
 
 //  * The function `getAllHotel` retrieves hotels based on specified criteria and returns them as a JSON
 //  * response.
+
+
+
+// const getAllHotel = async (req, res) => {
+//     const { min, max, ...others } = req.query;
+
+//     try {
+//            const hotels = await HotelModel.find({ ...others, price: { $gt: min || 5, $lt: max || 1000 } }).limit(req.query.limit);
+
+//         res.status(200).json({
+//             message: hotels,
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             error: 'Hotels not found!!',
+//         });
+//         }
+// };
+
 const getAllHotel = async (req, res) => {
-    const { min, max, ...others } = req.query;
+    const { min, max, limit, ...others } = req.query;
+
+    const priceFilter = {};
+    if (min) priceFilter.$gt = Number(min);
+    if (max) priceFilter.$lt = Number(max);
+
+    const query = {
+        ...others,
+        ...(Object.keys(priceFilter).length && { price: priceFilter })
+    };
 
     try {
-           const hotels = await HotelModel.find({ ...others, price: { $gt: min || 5, $lt: max || 1000 } }).limit(req.query.limit);
+        const hotels = await HotelModel.find(query).limit(Number(limit) || 0);
 
-        res.status(200).json({
-            message: hotels,
-        });
+        console.log('Hotels fetched:', hotels);
+
+        res.status(200).json({ message: hotels });
     } catch (error) {
-        res.status(500).json({
-            error: 'Hotels not found!!',
-        });
-        }
+        console.error('Error fetching hotels:', error);
+        res.status(500).json({ error: 'Hotels not found!!' });
+    }
 };
+
+
 
 /**
  * The function `getHotelByCity` takes a list of cities as input and returns the count of hotels in

@@ -75,7 +75,7 @@ export default blogDetails;
 // based on the response data.
 // @returns an object with two properties: "paths" and "fallback".
 export async function getStaticPaths() {
-    const response = await axios.get(`https://rooms-backend.onrender.com/api/blogs`);
+    const response = await axios.get(`http://localhost:4000/api/blogs`);
     const data = await response.data.message;
 
     const paths = data.map((item) => ({
@@ -97,8 +97,8 @@ export async function getStaticProps(context) {
     // api route
     const { params } = context;
     console.log(params);
-    const res = await axios.get(`https://rooms-backend.onrender.com/api/blog/${params.blog}`);
-    const res2 = await axios.get('https://rooms-backend.onrender.com/api/blogs');
+    const res = await axios.get(`http://localhost:4000/api/blog/${params.blog}`);
+    const res2 = await axios.get('http://localhost:4000/api/blogs');
 
     const data = await res.data.message;
     const blogss = await res2.data.message;

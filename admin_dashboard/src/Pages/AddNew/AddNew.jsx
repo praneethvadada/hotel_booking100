@@ -79,7 +79,7 @@ function AddNew({ inputs, title, type }) {
             }
 
             await axios.post(
-                `https://rooms-backend.onrender.com/api/${
+                `http://localhost:4000/api/${
                     type === 'USER' ? 'user/signup' : 'blog/create'
                 }`,
                 userInp

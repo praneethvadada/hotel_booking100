@@ -32,11 +32,11 @@ function AddHotel({ inputs, title, type }) {
     const nevigate = useNavigate();
 
     /* The `useEffect` hook is used to perform side effects in a functional component. In this case, it
-   is used to fetch data from the API endpoint `'https://rooms-backend.onrender.com/api/rooms'` and
+   is used to fetch data from the API endpoint `'http://localhost:4000/api/rooms'` and
    update the state variable `roomData` with the response data. */
     useEffect(() => {
         const roomsss = async () => {
-            const room = await axios.get('https://rooms-backend.onrender.com/api/rooms');
+            const room = await axios.get('http://localhost:4000/api/rooms');
             setroomData(room.data.message);
         };
         roomsss();
@@ -87,7 +87,7 @@ function AddHotel({ inputs, title, type }) {
                 images: imgList,
             };
 
-            await axios.post('https://rooms-backend.onrender.com/api/hotel/create', newHotel);
+            await axios.post('http://localhost:4000/api/hotel/create', newHotel);
             setLoading(false);
             nevigate(`/hotels`);
         } catch (error) {

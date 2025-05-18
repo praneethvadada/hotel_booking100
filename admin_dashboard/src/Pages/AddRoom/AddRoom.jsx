@@ -23,43 +23,49 @@ function AddRoom({ inputs, title, type }) {
     const [hotelId, setHotelId] = useState(null);
     const nevigate = useNavigate();
 
-    /* The `useEffect` hook is used to perform side effects in a functional component. In this case, it
-   is used to fetch data from the API endpoint `'https://rooms-backend.onrender.com/api/hotels'` and
-   update the state variables `roomData` with the response data. */
     useEffect(() => {
         const roomsss = async () => {
-            const hotel = await axios.get('https://rooms-backend.onrender.com/api/hotels');
-            setRoomData(hotel.data.message);
+            try {
+                const hotel = await axios.get('http://localhost:4000/api/hotels');
+                console.log('Fetched hotel data:', hotel.data.message);
+                setRoomData(hotel.data.message);
+            } catch (err) {
+                console.error('Error fetching hotel data:', err);
+            }
         };
+
         roomsss();
     }, []);
 
     const handleChange = (e) => {
-        setInpVal({ ...inpVal, [e.target.name]: e.target.value });
+        const updatedVal = { ...inpVal, [e.target.name]: e.target.value };
+        console.log('Input changed:', updatedVal);
+        setInpVal(updatedVal);
     };
 
-    /**
-     * The handleSubmit function is an asynchronous function that handles form submission by sending a
-     * POST request to a backend API with the input values and room numbers, and then redirects to the
-     * /rooms page.
-     */
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const rooms = roomNums.split(',').map((room) => ({ number: room }));
+        console.log('Submit triggered');
+
+        const rooms = roomNums.split(',').map((room) => ({ number: room.trim() }));
         const datas = {
             ...inpVal,
             roomNumbers: rooms,
         };
 
+        console.log('Form data to submit:', datas);
+        console.log('Hotel ID selected:', hotelId);
+
         try {
             setLoading(true);
 
-            await axios.post(`https://rooms-backend.onrender.com/api/room/${hotelId}`, datas);
+            const response = await axios.post(`http://localhost:4000/api/room/${hotelId}`, datas);
+            console.log('Room creation response:', response.data);
 
             setLoading(false);
             nevigate(`/rooms`);
         } catch (error) {
-            console.log(error);
+            console.error('Error while submitting room:', error);
             setLoading(false);
         }
     };
@@ -88,8 +94,12 @@ function AddRoom({ inputs, title, type }) {
                                     <label>Select Rooms</label>
                                     <select
                                         id="hotelId"
-                                        onChange={(e) => setHotelId(e.target.value)}
+                                        onChange={(e) => {
+                                            console.log('Selected hotel ID:', e.target.value);
+                                            setHotelId(e.target.value);
+                                        }}
                                     >
+                                        <option value="">-- Select a Hotel --</option>
                                         {roomData &&
                                             roomData.map((item) => (
                                                 <option key={item._id} value={item._id}>
@@ -103,7 +113,10 @@ function AddRoom({ inputs, title, type }) {
                                     <label> Room Numbers</label>
                                     <input
                                         placeholder="222, 333, 444"
-                                        onChange={(e) => setRoomNums(e.target.value)}
+                                        onChange={(e) => {
+                                            console.log('Room numbers input:', e.target.value);
+                                            setRoomNums(e.target.value);
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -112,6 +125,7 @@ function AddRoom({ inputs, title, type }) {
                                 type="submit"
                                 className="submit_btn"
                                 style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+                                disabled={loading}
                             >
                                 {loading ? 'Loading..' : 'Submit'}
                             </button>

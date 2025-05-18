@@ -43,51 +43,103 @@ const signup = async (req, res) => {
  * logging in, including checking the user's email and password, generating a JWT token, and sending a
  * response with the token and user details.
  */
+// const login = async (req, res) => {
+//     try {
+//         const isUser = await UserModel.find({ email: req.body.email });
+//         if (isUser) {
+//             const comparePassword = await bcrypt.compare(req.body.password, isUser[0].password);
+//             if (comparePassword) {
+//                 // jwt process
+
+//                 /* The line `const { password, isadmin, ...userDetail } = isUser[0]._doc;` is using
+//                 object destructuring to extract the `password` and `isadmin` properties from the
+//                 `isUser[0]._doc` object. It also creates a new object called `userDetail` that
+//                 contains all the remaining properties of `isUser[0]._doc` except for `password` and
+//                 `isadmin`. */
+//                 const { password, isadmin, ...userDetail } = isUser[0]._doc;
+//                 const jwtToken = jwt.sign(
+//                     { id: isUser._id, isadmin: isUser.isadmin, email: isUser.email },
+//                     process.env.JWT_SECRET_KEY,
+//                     {
+//                         expiresIn: '3d',
+//                     },
+//                 );
+//                 res.cookie('access_token', jwtToken, {
+//                     httpOnly: true,
+//                 }).status(200).json({
+//                     message: { details: { ...userDetail }, isadmin },
+//                     jwtToken,
+//                 });
+//             } else {
+//                 res.status(500).json({
+//                     error: 'Incorrect email or password!',
+//                 });
+//             }
+//         } else {
+//             res.status(500).json({
+//                 error: 'Authentication failed!',
+//             });
+//         }
+//     } catch (error) {
+//         res.status(500).json({
+//             error: 'Authentication failed!!',
+//         });
+//     }
+// };
+
+// find user by userId and update
+
+
+
 const login = async (req, res) => {
     try {
-        const isUser = await UserModel.find({ email: req.body.email });
-        if (isUser) {
-            const comparePassword = await bcrypt.compare(req.body.password, isUser[0].password);
-            if (comparePassword) {
-                // jwt process
+        console.log('Login attempt with email:', req.body.email);
 
-                /* The line `const { password, isadmin, ...userDetail } = isUser[0]._doc;` is using
-                object destructuring to extract the `password` and `isadmin` properties from the
-                `isUser[0]._doc` object. It also creates a new object called `userDetail` that
-                contains all the remaining properties of `isUser[0]._doc` except for `password` and
-                `isadmin`. */
-                const { password, isadmin, ...userDetail } = isUser[0]._doc;
-                const jwtToken = jwt.sign(
-                    { id: isUser._id, isadmin: isUser.isadmin, email: isUser.email },
-                    process.env.JWT_SECRET_KEY,
-                    {
-                        expiresIn: '3d',
-                    },
-                );
-                res.cookie('access_token', jwtToken, {
-                    httpOnly: true,
-                }).status(200).json({
-                    message: { details: { ...userDetail }, isadmin },
-                    jwtToken,
-                });
-            } else {
-                res.status(500).json({
-                    error: 'Incorrect email or password!',
-                });
-            }
-        } else {
-            res.status(500).json({
-                error: 'Authentication failed!',
-            });
+        const user = await UserModel.findOne({ email: req.body.email });
+        if (!user) {
+            console.warn('User not found for email:', req.body.email);
+            return res.status(401).json({ error: 'Incorrect email or password!' });
         }
-    } catch (error) {
-        res.status(500).json({
-            error: 'Authentication failed!!',
+
+        console.log('User found:', user.email);
+
+        const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+        if (!isPasswordValid) {
+            console.warn('Invalid password for user:', user.email);
+            return res.status(401).json({ error: 'Incorrect email or password!' });
+        }
+
+        console.log('Password validated for user:', user.email);
+
+        const { password, isadmin, ...userDetail } = user._doc;
+
+        const jwtToken = jwt.sign(
+            { id: user._id, isadmin: user.isadmin, email: user.email },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '3d' }
+        );
+
+        console.log('JWT generated:', jwtToken);
+
+        // debugger; // Uncomment this line to pause execution if debugging in IDE
+
+        res.cookie('access_token', jwtToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        }).status(200).json({
+            message: { details: { ...userDetail }, isadmin },
+            jwtToken
         });
+
+    } catch (error) {
+        console.error('Error during login process:', error);
+        res.status(500).json({ error: 'Server error during login. Please try again later.' });
     }
 };
 
-// find user by userId and update
+
+
 /**
  * The updateUser function updates a user in the database and returns the updated user as a response
  */

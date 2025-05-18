@@ -45,7 +45,7 @@ const index = ({ hotelList }) => {
         const getHotelByCity = async () => {
 
             if (city !== "") {
-            const response = await axios.get(`https://rooms-backend.onrender.com/api/hotels?city=${city}`
+            const response = await axios.get(`http://localhost:4000/api/hotels?city=${city}`
             );
             const hotels = await response.data.message
             setHotelData(hotels)
@@ -67,7 +67,7 @@ const index = ({ hotelList }) => {
         dispatch({ type: 'NEW_SEARCH', payload: { city, dates, options } });
         // fetch data from server by search values
         const hotels = await axios.get(
-            `https://rooms-backend.onrender.com/api/hotels?city=${city?.toLocaleLowerCase()}&min=${min}&max=${max}`
+            `http://localhost:4000/api/hotels?city=${city?.toLocaleLowerCase()}&min=${min}&max=${max}`
         );
         const hotelDatas = await hotels.data.message;
         setHotelData(hotelDatas);
@@ -205,7 +205,7 @@ export default index;
 
 // The function retrieves a list of hotels from an API endpoint and returns it as a prop.
 export async function getStaticProps() {
-    const response = await axios.get('https://rooms-backend.onrender.com/api/hotels');
+    const response = await axios.get('http://localhost:4000/api/hotels');
 
     const data = await response.data.message;
 
